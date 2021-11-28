@@ -26,7 +26,8 @@ INIT_LR = 1e-4
 EPOCHS = 20
 BS = 32
 
-DIRECTORY = r"C:\Users\vancu\Downloads\Compressed\Real-Time-Face-Mask-Detection-OpenCV-Python-2_2\Real-Time Face Mask Detection OpenCV Python\dataset"
+#DIRECTORY = r"C:\Users\vancu\Downloads\Compressed\Real-Time-Face-Mask-Detection-OpenCV-Python-2_2\Real-Time Face Mask Detection OpenCV Python\dataset"
+DIRECTORY = r"dataset"
 CATEGORIES = ["with_mask", "without_mask"]
 
 # grab the list of images in our dataset directory, then initialize
