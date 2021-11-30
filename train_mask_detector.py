@@ -22,23 +22,23 @@ import os
 
 let_plot = True
 
-# initialize the initial learning rate, number of epochs to train for,
-# and batch size
+# In[1]: initialize the initial learning rate, number of epochs to train for, and batch size
 INIT_LR = 1e-4
 EPOCHS = 20
 BS = 32
-
-#DIRECTORY = r"C:\Users\vancu\Downloads\Compressed\Real-Time-Face-Mask-Detection-OpenCV-Python-2_2\Real-Time Face Mask Detection OpenCV Python\dataset"
+# In[2]: Load ảnh và tiền xử lý
 DIRECTORY = r"dataset"
 CATEGORIES = ["with_mask", "without_mask"]
 
-# grab the list of images in our dataset directory, then initialize
-# the list of data (i.e., images) and class images
-print("[INFO] loading images...")
+# lấy danh sách các hình ảnh trong thư mục chứa data, 
+# khởi tạo danh sách data và nhãn các hình ảnh
+print("Loading images...")
 
 data = []
 labels = []
-
+# Tiền xử lý
+# Đổi kích thước ảnh thành 224*224 pixel, 
+# chuyển ảnh sang định dạng mảng, chuyển đổi ảnh sang định dạng mảng
 for category in CATEGORIES:
     path = os.path.join(DIRECTORY, category)
     for img in os.listdir(path):
@@ -50,18 +50,18 @@ for category in CATEGORIES:
     	data.append(image)
     	labels.append(category)
 
-# perform one-hot encoding on the labels
+# mã hóa 1 lẫn trên các nhãn
 lb = LabelBinarizer()
 labels = lb.fit_transform(labels)
 labels = to_categorical(labels)
 
 data = np.array(data, dtype="float32")
 labels = np.array(labels)
-
+# Chia tập train và tập test
 (trainX, testX, trainY, testY) = train_test_split(data, labels,
 	test_size=0.20, stratify=labels, random_state=42)
 
-# construct the training image generator for data augmentation
+# In[3]: tăng dữ liệu cho data
 aug = ImageDataGenerator(
 	rotation_range=20,
 	zoom_range=0.15,
@@ -70,14 +70,11 @@ aug = ImageDataGenerator(
 	shear_range=0.15,
 	horizontal_flip=True,
 	fill_mode="nearest")
-
-# load the MobileNetV2 network, ensuring the head FC layer sets are
-# left off
+# In[4]: load the MobileNetV2 network
 baseModel = MobileNetV2(weights="imagenet", include_top=False,
 	input_tensor=Input(shape=(224, 224, 3)))
 
-# construct the head of the model that will be placed on top of the
-# the base model
+# cấu tạo headmodel sẽ được đặt trên basemodel
 headModel = baseModel.output
 headModel = AveragePooling2D(pool_size=(7, 7))(headModel)
 headModel = Flatten(name="flatten")(headModel)
@@ -85,47 +82,39 @@ headModel = Dense(128, activation="relu")(headModel)
 headModel = Dropout(0.5)(headModel)
 headModel = Dense(2, activation="softmax")(headModel)
 
-# place the head FC model on top of the base model (this will become
-# the actual model we will train)
+# cấu tạo head Fc trên trên basemodel
 model = Model(inputs=baseModel.input, outputs=headModel)
 
-# loop over all layers in the base model and freeze them so they will
-# *not* be updated during the first training process
+# lặp lại trên tất cả các layer trong basemodel và vô hiệu hóa chúng để chúng sẽ
+# * không * được cập nhật trong quá trình đào tạo đầu tiên
 for layer in baseModel.layers:
 	layer.trainable = False
 
 # compile our model
-print("[INFO] compiling model...")
+print("Compiling model...")
 opt = Adam(lr=INIT_LR, decay=INIT_LR / EPOCHS)
 model.compile(loss="binary_crossentropy", optimizer=opt,
 	metrics=["accuracy"])
-
-# train the head of the network
-print("[INFO] training head...")
+# In[5]: train the head of the network
+print("Training head...")
 H = model.fit(
 	aug.flow(trainX, trainY, batch_size=BS),
 	steps_per_epoch=len(trainX) // BS,
 	validation_data=(testX, testY),
 	validation_steps=len(testX) // BS,
 	epochs=EPOCHS)
+# In[6] Đánh giá 
+# predictions on the testing set
 
-# make predictions on the testing set
 print("[INFO] evaluating network...")
 predIdxs = model.predict(testX, batch_size=BS)
-
-# for each image in the testing set we need to find the index of the
-# label with corresponding largest predicted probability
 predIdxs = np.argmax(predIdxs, axis=1)
-
-# show a nicely formatted classification report
 print(classification_report(testY.argmax(axis=1), predIdxs,
 	target_names=lb.classes_))
-
-# serialize the model to disk
 print("[INFO] saving mask detector model...")
 model.save("mask_detector.model", save_format="h5")
 
-# plot the training loss and accuracy
+# In[7] plot the training loss and accuracy
 N = EPOCHS
 if let_plot:
 	plt.style.use("ggplot")
