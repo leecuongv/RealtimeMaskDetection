@@ -20,6 +20,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+let_plot = True
+
 # initialize the initial learning rate, number of epochs to train for,
 # and batch size
 INIT_LR = 1e-4
@@ -125,14 +127,15 @@ model.save("mask_detector.model", save_format="h5")
 
 # plot the training loss and accuracy
 N = EPOCHS
-plt.style.use("ggplot")
-plt.figure()
-plt.plot(np.arange(0, N), H.history["loss"], label="train_loss")
-plt.plot(np.arange(0, N), H.history["val_loss"], label="val_loss")
-plt.plot(np.arange(0, N), H.history["accuracy"], label="train_acc")
-plt.plot(np.arange(0, N), H.history["val_accuracy"], label="val_acc")
-plt.title("Training Loss and Accuracy")
-plt.xlabel("Epoch #")
-plt.ylabel("Loss/Accuracy")
-plt.legend(loc="lower left")
-plt.savefig("plot.png")
+if let_plot:
+	plt.style.use("ggplot")
+	plt.figure()
+	plt.plot(np.arange(0, N), H.history["loss"], label="train_loss")
+	plt.plot(np.arange(0, N), H.history["val_loss"], label="val_loss")
+	plt.plot(np.arange(0, N), H.history["accuracy"], label="train_acc")
+	plt.plot(np.arange(0, N), H.history["val_accuracy"], label="val_acc")
+	plt.title("Training Loss and Accuracy")
+	plt.xlabel("Epoch #")
+	plt.ylabel("Loss/Accuracy")
+	plt.legend(loc="lower left")
+	plt.savefig("plot.png")
