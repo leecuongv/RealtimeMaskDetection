@@ -1,4 +1,5 @@
 #In[0] import, setting
+from numpy.core.numeric import True_
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
@@ -8,6 +9,17 @@ import imutils
 import time
 import cv2
 import os
+from playsound import playsound
+import threading
+
+daDeo = False
+
+
+def deoKhauTrang(daDeo):
+    if(daDeo==True):
+        playsound("sound/thucHien.mp3")
+    else:
+        playsound("sound/khongThucHien.mp3")
 
 def detect_and_predict_mask(frame, faceNet, maskNet):
     # Lấy kích thước của khung và tạo mảng các điểm để nhận diện
@@ -95,25 +107,26 @@ while True:
 
 		# the bounding box and text
 		# xác định các class labe và màu mà chúng ta sẽ dùng để box giới hạn và văn bản hiển thị
-		label = "Mask" if mask > withoutMask else "No Mask"
-		color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
-  
+		label = "Have a nice day" if mask > withoutMask else "Please wear a mask"
+		color = (0, 255, 0) if label == "Have a nice day" else (0, 0, 255)
+		daDeo = label
 		# hiển thị xác suất lên khung hình
-		label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
+		label = "{}".format(label)
+
 
 		# hiển thị xác suất nhận diện và bõ giới hạn
 		cv2.putText(frame, label, (startX, startY - 10),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
 		cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
-
+	if (daDeo == True):
+		alarm = threading.Thread(target=deoKhauTrang, args=(daDeo,))
+        #alarm.start()
 	# show the output frame
 	# xuất khung hình
-	cv2.imshow("Frame", frame)
+	cv2.imshow("Mask Detection", frame)
 	key = cv2.waitKey(1) & 0xFF
-
 	# nhấn q để thoát chương trình
 	if key == ord("q"):
 		break
-
 cv2.destroyAllWindows()
 vs.stop()
