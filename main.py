@@ -45,8 +45,6 @@ def detect_and_predict_mask(frame, faceNet, maskNet):
 		# trích xuất độ tin cậy(xác suất) được liên kết với phát hiện
 		confidence = detections[0, 0, i, 2]
 
-		# filter out weak detections by ensuring the confidence is
-		# greater than the minimum confidence
 		# lọc ra các phát hiện yếu để đảm bảo độ tin cậy lớn hơn độ tin cậy tối thiểu
 		if confidence > 0.5:
 			# tính toạn độ(x, y) của box để giới hạn cho mặt của đối tượng
@@ -75,7 +73,6 @@ def detect_and_predict_mask(frame, faceNet, maskNet):
   		# thay vì nhận diện từng khuôn mặt
 		faces = np.array(faces, dtype="float32")
 		preds = maskNet.predict(faces, batch_size=32)
-
 	# trả về bộ vị trí của các khuôn mặt
 	return (locs, preds)
 # In[1]: load model
@@ -106,7 +103,7 @@ while True:
 		(mask, withoutMask) = pred
 
 		# the bounding box and text
-		# xác định các class labe và màu mà chúng ta sẽ dùng để box giới hạn và văn bản hiển thị
+		# xác định các class label và màu mà chúng ta sẽ dùng để box giới hạn và văn bản hiển thị
 		label = "Have a nice day" if mask > withoutMask else "Please wear a mask"
 		color = (0, 255, 0) if label == "Have a nice day" else (0, 0, 255)
 		daDeo = label
