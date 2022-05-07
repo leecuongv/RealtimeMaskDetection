@@ -11,15 +11,16 @@ import cv2
 import os
 from playsound import playsound
 import threading
+from pygame import mixer
 
-daDeo = False
 
+def alert():
+   mixer.init()
+   alert=mixer.Sound('alert.wav')
+   alert.play()
+   time.sleep(2)
+   #alert.play() 
 
-def deoKhauTrang(daDeo):
-    if(daDeo==True):
-        playsound("sound/thucHien.mp3")
-    else:
-        playsound("sound/khongThucHien.mp3")
 
 def detect_and_predict_mask(frame, faceNet, maskNet):
     # Lấy kích thước của khung và tạo mảng các điểm để nhận diện
@@ -85,14 +86,14 @@ maskNet = load_model("mask_detector.model")
 
 # In[2] chuẩn bị stream video
 print("[INFO] starting video stream...")
-vs = VideoStream(src=0).start()
+vs = VideoStream(src=1).start()
 
 # In[3]: xử lý video stream
 while True:
 	# lấy từng khung hình (frame) từ video 
  	# và thay đổi kích thước của chúng để có chiều rộng tối đa là 400pixel
 	frame = vs.read()
-	frame = imutils.resize(frame, width=400)
+	frame = imutils.resize(frame, width=600)
 
 	# phát hện các khuôn mặt có trong khung hình và xác định liệu họ có đeo mặt nạ hay không 
 	(locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
@@ -109,14 +110,14 @@ while True:
 		daDeo = label
 		# hiển thị xác suất lên khung hình
 		label = "{}".format(label)
-
+		if(label == "Please wear a mask"):
+			alert()
 
 		# hiển thị xác suất nhận diện và bõ giới hạn
 		cv2.putText(frame, label, (startX, startY - 10),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
 		cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
-	if (daDeo == True):
-		alarm = threading.Thread(target=deoKhauTrang, args=(daDeo,))
+		
         #alarm.start()
 	# show the output frame
 	# xuất khung hình

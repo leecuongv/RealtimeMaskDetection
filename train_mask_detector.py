@@ -1,3 +1,4 @@
+"""Tham khảo: https://www.kaggle.com/andrewmvd/face-mask-detection/code#"""
 # In[0] import the necessary packages
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import MobileNetV2
