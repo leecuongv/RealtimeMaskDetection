@@ -1,4 +1,5 @@
 #In[0] import, setting
+from multiprocessing.connection import wait
 from numpy.core.numeric import True_
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
@@ -11,14 +12,19 @@ import cv2
 import os
 from playsound import playsound
 import threading
-from pygame import mixer
+from pygame import mixer, time
 
+dem = 0
 
 def alert():
    mixer.init()
    alert=mixer.Sound('alert.wav')
-   alert.play()
-   time.sleep(2)
+   channel = alert.play()
+   while channel.get_busy():
+       dem= dem + 1
+       print(dem)
+       #time.wait(100)
+   #time.sleep(5)
    #alert.play() 
 
 
@@ -32,7 +38,7 @@ def detect_and_predict_mask(frame, faceNet, maskNet):
  
 	faceNet.setInput(blob)
 	detections = faceNet.forward()
-	print(detections.shape)
+	#print(detections.shape)
 
 	#Khởi tạo danh sách các khuôn mặt, vị trí tương ứng của các điểm trên khuôn mặt, và danh sách các dự đoán
 	faces = []
@@ -88,12 +94,13 @@ maskNet = load_model("mask_detector.model")
 print("[INFO] starting video stream...")
 vs = VideoStream(src=1).start()
 
+
 # In[3]: xử lý video stream
 while True:
 	# lấy từng khung hình (frame) từ video 
  	# và thay đổi kích thước của chúng để có chiều rộng tối đa là 400pixel
 	frame = vs.read()
-	frame = imutils.resize(frame, width=600)
+	frame = imutils.resize(frame, width=400)
 
 	# phát hện các khuôn mặt có trong khung hình và xác định liệu họ có đeo mặt nạ hay không 
 	(locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
@@ -113,12 +120,11 @@ while True:
 		if(label == "Please wear a mask"):
 			alert()
 
-		# hiển thị xác suất nhận diện và bõ giới hạn
+		# hiển thị xác suất nhận diện và bỏ giới hạn
 		cv2.putText(frame, label, (startX, startY - 10),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
 		cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 		
-        #alarm.start()
 	# show the output frame
 	# xuất khung hình
 	cv2.imshow("Mask Detection", frame)
